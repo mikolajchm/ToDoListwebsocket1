@@ -15,12 +15,12 @@ io.on('connection', (socket) => {
   
   socket.on('addTask', (task) => {
     tasks.push(task);
-    io.emit('addTask', task);
+    socket.broadcast.emit('addTask', task);
   });
   
   socket.on('removeTask', (taskId) => {
     tasks = tasks.filter((task) => task.id !== taskId);
-    io.emit('removeTask', taskId);
+    socket.broadcast.emit('removeTask', taskId);
   });
 });
 

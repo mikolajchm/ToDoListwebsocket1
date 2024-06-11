@@ -8,40 +8,41 @@ const App = () => {
   const [tasks, setTasks] = useState([]);
   const [taskName, setTaskName] = useState("");
 
-useEffect(() => {
+  useEffect(() => {
     const socket = io('ws://localhost:8000', { transports: ['websocket'] });
     setSocket(socket);
     socket.on('addTask', (task) => addTask(task))
     socket.on('removeTask', (id) => removeTask(id))
     socket.on('updateData', (data) => updateTasks(data))
 
-    return () => {
-      socket.disconnect();
-    };
-}, []);
+      return () => {
+        socket.disconnect();
+      };
+  }, []);
 
-const addTask = (task) => {
-  setTasks(tasks => [...tasks, task]);
-}
+  const removeTask = (id, emitEvent = false) => {
+    setTasks((tasks) => tasks.filter((task) => task.id !== id));
 
-const removeTask = (id, emitEvent = false) => {
-  setTasks(tasks => tasks.filter(task => task.id !== id));
+    if (socket && emitEvent) {
+      socket.emit("removeTask", id);
+    }
+  };
 
-  if (socket && emitEvent) {
-    socket.emit("removeTask", id);
-  }
-};
+  const addTask = (task) => {
+    setTasks((tasks) => [...tasks, task]);
+  };
 
-const updateTasks = (data) => {
-  setTasks((tasks) => [...tasks, ...data]);
-};
+  const updateTasks = (data) => {
+    setTasks((tasks) => [...tasks, ...data]);
+  };
 
-const submitForm = (e) => {
-  e.preventDefault();
-  const task = { id: uuidv4, name: taskName };
-  addTask(task);
-  socket.emit('addTask', task)
-};
+  const submitForm = (e) => {
+    e.preventDefault();
+    const task = { id: uuidv4(), name: taskName };
+    addTask(task);
+    socket.emit("addTask", task);
+    setTaskName("");
+  };
 
   return (
     <div className="App">
@@ -74,6 +75,6 @@ const submitForm = (e) => {
       </section>
     </div>
   );
-}
+};
 
 export default App;
